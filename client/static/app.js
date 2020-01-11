@@ -6,39 +6,21 @@ const app = new Vue({
     imgToPredictPreview: null,
     loading: true,
     model: null,
-    classes: null,
-    predictions: []
+    predictions: [],
+    webcam: null,
+    classesCount: 0,
   },
   async mounted() {
-    this.model = await tf.loadGraphModel("model/model.json");
-    this.classes = {
-      0: "Normal",
-      1: "Tuberculosis"
-    };
+    this.model = await tmImage.load("model/model.json", "model/metadata.json");
+    this.webcam = new tmImage.Webcam(224, 224, true);
+    this.classesCount = this.model.getTotalClasses(),
     this.loading = false;
   },
   methods: {
     async predict() {
       if (this.imgToPredict) {
-        this.loading = true;
-        const tensor = tf.browser
-          .fromPixels(this.$refs.preview, 3)
-          .resizeNearestNeighbor([224, 224])
-          .expandDims()
-          .toFloat()
-          .reverse(-1);
-        let predictions = await this.model.predict(tensor).data();
-        this.loading = false;
-        this.predictions = Array.from(predictions)
-          .map((p, i) => {
-            return {
-              probability: p,
-              className: this.classes[i]
-            };
-          })
-          .sort(function(a, b) {
-            return b.probability - a.probability;
-          });
+        let prediction = await this.model.predict(this.$refs.preview);
+        this.showPredictions(prediction);
       }
     },
     handleImage(e) {
@@ -50,6 +32,34 @@ const app = new Vue({
           this.imgToPredictPreview = e.target.result;
         };
         reader.readAsDataURL(this.imgToPredict);
+      }
+    },
+    async enableCamera() {
+      await this.webcam.setup();
+      this.webcam.play();
+      window.requestAnimationFrame(this.loop);
+      document
+        .getElementById("webcam-container")
+        .appendChild(this.webcam.canvas);
+
+    },
+    async loop() {
+      this.webcam.update();
+      await this.predictFromCamera();
+      window.requestAnimationFrame(this.loop);
+    },
+    async predictFromCamera() {
+      const prediction = await this.model.predict(this.webcam.canvas);
+      this.showPredictions(prediction);
+      
+    },
+    showPredictions(prediction) {
+      this.predictions = [];
+      for (let i = 0; i < this.classesCount; i++) {
+        this.predictions.push({
+          className: prediction[i].className,
+          probability: prediction[i].probability.toFixed(5)
+        });
       }
     }
   }

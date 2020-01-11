@@ -14,7 +14,7 @@
     <div id="app">
       <div class="container">
         <div v-if="loading">
-          <h1 class="title is-1">Wait... Model or prediction is loading!</h1>
+          <h1 class="title is-1">Wait for model loading!</h1>
         </div>
         <div v-else class="columns">
           <div class="column is-3">
@@ -56,16 +56,24 @@
                 </button>
               </div>
             </div>
+
+            <h1 class="title is-1">Camera</h1>
+            <div class="field">
+              <div class="control">
+                <button type="button" class="button is-info" @click="enableCamera">Enable</button>
+              </div>
+            </div>
           </div>
           <div class="column is-3">
             <h1 class="title is-1">Preview</h1>
             <img :src="imgToPredictPreview" ref="preview" alt="" />
+            <div id="webcam-container"></div>
           </div>
           <div class="column is-3">
             <h1 class="title is-1">Predict</h1>
             <ul>
-              <li v-for="p in predictions" :key="p.probability">
-                <b>{{ p.className }}:</b> {{ p.probability.toFixed(5) }}
+              <li v-for="(p, index) in predictions" :key="index">
+                <b>{{ p.className }}:</b> {{ p.probability }}
               </li>
             </ul>
           </div>
@@ -75,8 +83,7 @@
 
     <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@1.5.1/dist/tf.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@0.8.3/dist/teachablemachine-image.min.js"></script>
     <script src="app.js"></script>
-    <!-- <script src="target_classes.js"></script> -->
-    <!-- <script src="predict.js"></script> -->
   </body>
 </html>
