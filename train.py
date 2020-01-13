@@ -5,12 +5,12 @@ import os
 
 # Basically, default values are the same as here
 BATCH_SIZE = 32
-EPOCHS = 5
+EPOCHS = 15
 IMG_WIDTH = 256
 IMG_HEIGHT = 256
 AUTOTUNE = tf.data.experimental.AUTOTUNE
-TRAIN_DIR = pathlib.Path('train_imgs')
-VAL_DIR = pathlib.Path('validation_imgs')
+TRAIN_DIR = pathlib.Path('train_art_imgs')
+VAL_DIR = pathlib.Path('validation_art_imgs')
 
 train_image_count = len(list(TRAIN_DIR.glob('*/*.jpg')))
 validation_image_count = len(list(VAL_DIR.glob('*/*.jpg')))
@@ -88,4 +88,4 @@ model.fit(x=train_ds,
           validation_data=validation_ds,
           validation_steps=validation_image_count // BATCH_SIZE)
 
-model.save('dogs_and_cats_model.h5')
+model.save('art_model.h5')

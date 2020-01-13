@@ -1,0 +1,1 @@
+tensorflowjs_converter --input_format keras art_model.h5 tmp

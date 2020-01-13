@@ -1,5 +1,10 @@
 .vscode/
+
 env/
 node_modules/
+
+tmp/
+
 .DS_Store
+
 package-lock.json
