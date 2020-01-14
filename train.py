@@ -3,9 +3,8 @@ import numpy as np
 import pathlib
 import os
 
-# Basically, default values are the same as here
 BATCH_SIZE = 32
-EPOCHS = 15
+EPOCHS = 5
 IMG_WIDTH = 256
 IMG_HEIGHT = 256
 AUTOTUNE = tf.data.experimental.AUTOTUNE
@@ -88,4 +87,4 @@ model.fit(x=train_ds,
           validation_data=validation_ds,
           validation_steps=validation_image_count // BATCH_SIZE)
 
-model.save('art_model.h5')
+model.save('model.h5')

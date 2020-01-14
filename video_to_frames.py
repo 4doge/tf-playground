@@ -1,6 +1,6 @@
 import cv2
 
-LABEL = 'supper'
+LABEL = 'oops'
 video = cv2.VideoCapture(f'videos/{LABEL}.mov')
 currentframe = 0
 
