@@ -1,13 +1,14 @@
 import tensorflow as tf
 import numpy as np
 import pathlib
-import os
+from utils import get_label_index, test
+from functools import partial
 
 # Basically, default values are the same as here
 BATCH_SIZE = 32
 EPOCHS = 5
-IMG_WIDTH = 256
-IMG_HEIGHT = 256
+IMG_WIDTH = 128
+IMG_HEIGHT = 128
 AUTOTUNE = tf.data.experimental.AUTOTUNE
 TRAIN_DIR = pathlib.Path('train_imgs')
 VAL_DIR = pathlib.Path('validation_imgs')
@@ -20,13 +21,9 @@ print(f'VALIDATION IMAGES - {validation_image_count}')
 CLASS_NAMES = np.array([folder.name for folder in TRAIN_DIR.glob('*')])
 print(f'CLASSES - {CLASS_NAMES}')
 
-train_list_ds = tf.data.Dataset.list_files(str(TRAIN_DIR/'*/*'))
-validation_list_ds = tf.data.Dataset.list_files(str(VAL_DIR/'*/*'))
-
-
-def get_label(file_path):
-    parts = tf.strings.split(file_path, os.path.sep)
-    return parts[-2] == CLASS_NAMES
+train_list_ds = tf.data.Dataset.list_files(str(TRAIN_DIR / '*/*'))
+validation_list_ds = tf.data.Dataset.list_files(str(VAL_DIR / '*/*'))
+LABELS = [folder.name for folder in TRAIN_DIR.glob('*')]
 
 
 def decode_img(img):
@@ -36,13 +33,25 @@ def decode_img(img):
 
 
 def process_path(file_path):
-    label = get_label(file_path)
+    label = tf.strings.split(file_path, '/')[-2]
+    tf.print(label)
+
+    label_index = len(LABELS) + 1
+    for i, v in enumerate(LABELS):
+        if v == label:
+            label_index = i
+
+    # label_index = get_label_index(label, LABELS)
     img = tf.io.read_file(file_path)
     img = decode_img(img)
-    return img, label
+    return img, label_index
 
 
-train_labeled_ds = train_list_ds.map(process_path, num_parallel_calls=AUTOTUNE)
+def upper_case_fn(t: tf.Tensor):
+    return t.numpy().decode('utf-8').upper()
+
+
+train_labeled_ds = train_list_ds.map(process_path, num_parallel_calls=1)
 validation_labeled_ds = validation_list_ds.map(
     process_path, num_parallel_calls=AUTOTUNE)
 
@@ -77,10 +86,10 @@ model = tf.keras.Sequential([
 ])
 
 model.compile(optimizer='adam',
-              loss='categorical_crossentropy',
-              metrics=['accuracy'])
+              loss='sparse_categorical_crossentropy',
+              metrics=['accuracy', 'sparse_categorical_accuracy'])
 
-model.summary()
+# model.summary()
 
 model.fit(x=train_ds,
           epochs=EPOCHS,
@@ -88,4 +97,7 @@ model.fit(x=train_ds,
           validation_data=validation_ds,
           validation_steps=validation_image_count // BATCH_SIZE)
 
-model.save('dogs_and_cats_model.h5')
+model.save('dogs_and_cats_and_flowers2.h5')
+
+if __name__ == '__main__':
+    pass
