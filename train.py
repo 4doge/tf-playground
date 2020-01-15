@@ -1,8 +1,6 @@
 import tensorflow as tf
 import numpy as np
 import pathlib
-from utils import get_label_index, test
-from functools import partial
 
 # Basically, default values are the same as here
 BATCH_SIZE = 32
@@ -34,14 +32,13 @@ def decode_img(img):
 
 def process_path(file_path):
     label = tf.strings.split(file_path, '/')[-2]
-    tf.print(label)
+    # tf.print(label)
 
     label_index = len(LABELS) + 1
     for i, v in enumerate(LABELS):
         if v == label:
             label_index = i
 
-    # label_index = get_label_index(label, LABELS)
     img = tf.io.read_file(file_path)
     img = decode_img(img)
     return img, label_index
@@ -51,7 +48,7 @@ def upper_case_fn(t: tf.Tensor):
     return t.numpy().decode('utf-8').upper()
 
 
-train_labeled_ds = train_list_ds.map(process_path, num_parallel_calls=1)
+train_labeled_ds = train_list_ds.map(process_path, num_parallel_calls=AUTOTUNE)
 validation_labeled_ds = validation_list_ds.map(
     process_path, num_parallel_calls=AUTOTUNE)
 
